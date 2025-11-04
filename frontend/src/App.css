@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* App.css - Photo Editor Styles */
+
+/* Ensure full viewport height usage */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Smooth transitions for interactive elements */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Canvas container enhancements */
+canvas {
+  display: block;
+  image-rendering: auto;
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+}
