@@ -4,109 +4,170 @@ import ImageCanvas from './components/ImageCanvas';
 import ToolPanel from './components/ToolPanel';
 import PropertyPanel from './components/PropertyPanel';
 import HistoryPanel from './components/HistoryPanel';
+import { useAppDispatch, useAppSelector } from './store/hooks';
+import { undo, redo } from './store/imageEditorSlice';
 
 function App() {
+  const dispatch = useAppDispatch();
+  const imageState = useAppSelector(state => state.imageEditor.present);
+  const canUndo = useAppSelector(state => state.imageEditor.past.length > 0);
+  const canRedo = useAppSelector(state => state.imageEditor.future.length > 0);
+  
   const [selectedTool, setSelectedTool] = useState('select');
-  const [brightness, setBrightness] = useState(0);
-  const [contrast, setContrast] = useState(0);
-  const [saturation, setSaturation] = useState(100);
   const [history, setHistory] = useState<string[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(-1);
+  const [showPropertyPanel, setShowPropertyPanel] = useState(true);
 
   const handleHistoryChange = (action: string) => {
-    const newHistory = history.slice(0, currentIndex + 1);
-    newHistory.push(action);
-    setHistory(newHistory);
-    setCurrentIndex(newHistory.length - 1);
+    setHistory(prev => [...prev, action]);
   };
 
   const handleUndo = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      // In a real implementation, you would restore the previous state here
-    }
+    dispatch(undo());
   };
 
   const handleRedo = () => {
-    if (currentIndex < history.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      // In a real implementation, you would restore the next state here
-    }
+    dispatch(redo());
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="bg-linear-to-r from-blue-600 to-blue-700 text-white shadow-lg">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <span className="text-3xl">📷</span>
-            <div>
-              <h1 className="text-2xl font-bold">PicsNext</h1>
-              <p className="text-sm text-blue-100">Professional image editing made simple</p>
+    <div className="h-screen flex flex-col bg-[#0d0c22]">
+      {/* Canva-style Top Toolbar */}
+      <header className="bg-[#18171f] border-b border-gray-800 shadow-lg">
+        <div className="px-4 py-2 flex items-center justify-between">
+          {/* Left: Logo and Project Name */}
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-2xl">📷</span>
+              <h1 className="text-lg font-bold text-white">PicsNext</h1>
+            </div>
+            <div className="hidden md:flex items-center space-x-2">
+              <button className="px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded transition">
+                File
+              </button>
+              <button className="px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded transition">
+                Edit
+              </button>
+              <button className="px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded transition">
+                View
+              </button>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm bg-blue-500 px-3 py-1 rounded-full">v1.0.0</span>
+
+          {/* Center: Undo/Redo */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleUndo}
+              disabled={!canUndo}
+              className={`p-2 rounded transition ${
+                canUndo
+                  ? 'text-white hover:bg-gray-800'
+                  : 'text-gray-600 cursor-not-allowed'
+              }`}
+              title="Undo (Ctrl+Z)"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+              </svg>
+            </button>
+            <button
+              onClick={handleRedo}
+              disabled={!canRedo}
+              className={`p-2 rounded transition ${
+                canRedo
+                  ? 'text-white hover:bg-gray-800'
+                  : 'text-gray-600 cursor-not-allowed'
+              }`}
+              title="Redo (Ctrl+Y)"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
+              </svg>
+            </button>
           </div>
+
+          {/* Right: Actions
+          <div className="flex items-center space-x-3">
+            <button className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded transition">
+              Preview
+            </button>
+            <button className="px-6 py-2 text-sm font-medium bg-[#8b3dff] hover:bg-[#7c2ef5] text-white rounded-lg transition shadow-md">
+              Export
+            </button>
+          </div> */}
         </div>
       </header>
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar - Tool Panel */}
-        <aside className="w-64 hidden md:block">
+        {/* Left Sidebar - Tool Panel (Canva-style icon bar) */}
+        <aside className="w-20 bg-[#18171f] border-r border-gray-800 hidden md:block">
           <ToolPanel selectedTool={selectedTool} onToolSelect={setSelectedTool} />
         </aside>
 
         {/* Center - Canvas Area */}
-        <main className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-hidden">
-            <ImageCanvas
-              selectedTool={selectedTool}
-              brightness={brightness}
-              contrast={contrast}
-              saturation={saturation}
-              onHistoryChange={handleHistoryChange}
-            />
-          </div>
-
-          {/* Bottom - History Panel */}
-          <div className="hidden lg:block">
-            <HistoryPanel
-              history={history}
-              currentIndex={currentIndex}
-              onUndo={handleUndo}
-              onRedo={handleRedo}
-            />
-          </div>
+        <main className="flex-1 flex flex-col overflow-hidden bg-[#0d0c22]">
+          <ImageCanvas
+            selectedTool={selectedTool}
+            brightness={imageState.brightness}
+            contrast={imageState.contrast}
+            saturation={imageState.saturation}
+            onHistoryChange={handleHistoryChange}
+          />
         </main>
 
-        {/* Right Sidebar - Property Panel */}
-        <aside className="w-80 hidden lg:block">
-          <PropertyPanel
-            selectedTool={selectedTool}
-            brightness={brightness}
-            contrast={contrast}
-            saturation={saturation}
-            onBrightnessChange={setBrightness}
-            onContrastChange={setContrast}
-            onSaturationChange={setSaturation}
-          />
-        </aside>
+        {/* Right Sidebar - Property Panel (Canva-style) */}
+        {showPropertyPanel && (
+          <aside className="w-80 bg-[#18171f] border-l border-gray-800 hidden lg:flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto">
+              <PropertyPanel
+                selectedTool={selectedTool}
+                brightness={imageState.brightness}
+                contrast={imageState.contrast}
+                saturation={imageState.saturation}
+              />
+            </div>
+            
+            {/* History at bottom of right panel */}
+            <div className="border-t border-gray-800">
+              <HistoryPanel
+                history={history}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                canUndo={canUndo}
+                canRedo={canRedo}
+              />
+            </div>
+          </aside>
+        )}
+
+        {/* Toggle Property Panel Button */}
+        <button
+          onClick={() => setShowPropertyPanel(!showPropertyPanel)}
+          className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-l-lg shadow-lg transition z-10"
+          style={{ right: showPropertyPanel ? '320px' : '0' }}
+        >
+          <svg 
+            className={`w-4 h-4 transition-transform ${showPropertyPanel ? '' : 'rotate-180'}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
       </div>
 
-      {/* Mobile Tool Panel - Bottom Sheet */}
-      <div className="md:hidden bg-white border-t border-gray-300 p-2 overflow-x-auto">
+      {/* Mobile Tool Panel - Bottom */}
+      <div className="md:hidden bg-[#18171f] border-t border-gray-800 p-2 overflow-x-auto">
         <div className="flex space-x-2">
           {['select', 'crop', 'brightness', 'contrast', 'saturation', 'filters'].map((tool) => (
             <button
               key={tool}
               onClick={() => setSelectedTool(tool)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
                 selectedTool === tool
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700'
+                  ? 'bg-[#8b3dff] text-white'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
               {tool.charAt(0).toUpperCase() + tool.slice(1)}
@@ -117,15 +178,12 @@ function App() {
 
       {/* Mobile Property Panel - Collapsible */}
       {selectedTool !== 'select' && (
-        <div className="lg:hidden bg-white border-t border-gray-300 p-4 max-h-48 overflow-y-auto">
+        <div className="lg:hidden bg-[#18171f] border-t border-gray-800 p-4 max-h-48 overflow-y-auto">
           <PropertyPanel
             selectedTool={selectedTool}
-            brightness={brightness}
-            contrast={contrast}
-            saturation={saturation}
-            onBrightnessChange={setBrightness}
-            onContrastChange={setContrast}
-            onSaturationChange={setSaturation}
+            brightness={imageState.brightness}
+            contrast={imageState.contrast}
+            saturation={imageState.saturation}
           />
         </div>
       )}
