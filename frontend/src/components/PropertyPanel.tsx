@@ -1,5 +1,5 @@
 import { useAppDispatch } from '../store/hooks';
-import { setBrightness, setContrast, setSaturation, setFilter } from '../store/imageEditorSlice';
+import { setBrightness, setContrast, setSaturation, setFilter, setRotation } from '../store/imageEditorSlice';
 
 interface PropertyPanelProps {
   selectedTool: string;
@@ -30,6 +30,10 @@ const PropertyPanel = ({
 
   const handleFilterChange = (filterName: string) => {
     dispatch(setFilter(filterName));
+  };
+
+  const handleRotation = (degrees: number) => {
+    dispatch(setRotation(degrees));
   };
 
   const renderToolProperties = () => {
@@ -137,17 +141,29 @@ const PropertyPanel = ({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-300">Rotation</h3>
             <div className="grid grid-cols-2 gap-2">
-              <button className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium">
+              <button 
+                onClick={() => handleRotation(90)}
+                className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium"
+              >
                 90° CW
               </button>
-              <button className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium">
+              <button 
+                onClick={() => handleRotation(270)}
+                className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium"
+              >
                 90° CCW
               </button>
-              <button className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium">
+              <button 
+                onClick={() => handleRotation(180)}
+                className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium"
+              >
                 180°
               </button>
-              <button className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium">
-                Custom
+              <button 
+                onClick={() => handleRotation(0)}
+                className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium"
+              >
+                Reset
               </button>
             </div>
           </div>

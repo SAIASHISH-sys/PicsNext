@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { useImageLoader } from '../hooks/useImageLoader';
 import { useImageFilters } from '../hooks/useImageFilters';
+import { useAppSelector } from '../store/hooks';
 
 interface ImageCanvasProps {
   selectedTool: string;
@@ -47,30 +48,72 @@ const ImageCanvas = ({
     saturation,
   });
 
+  // Get rotation from Redux
+  const rotation = useAppSelector((state) => state.imageEditor.present.rotation);
+  
+  // Store the base rotated image separately
+  const rotatedImageRef = useRef<ImageData | null>(null);
+
+  // Effect 1: Handle rotation and store the rotated image data
   useEffect(() => {
-    if (image && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+    if (!image || !canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-      // Ensure canvas matches image size whenever a new image loads
-      if (canvas.width !== image.width || canvas.height !== image.height) {
-        canvas.width = image.width;
-        canvas.height = image.height;
-      }
+    // Determine canvas dimensions based on rotation
+    const isSideways = rotation === 90 || rotation === 270;
+    const canvasWidth = isSideways ? image.height : image.width;
+    const canvasHeight = isSideways ? image.width : image.height;
 
-      // Draw original image
-      ctx.drawImage(image, 0, 0, image.width, image.height);
+    // Create a temporary canvas for rotation
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvasWidth;
+    tempCanvas.height = canvasHeight;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
 
-      // Save original image data on first load
-      if (!originalImageData) {
-        setOriginalImageData(ctx.getImageData(0, 0, image.width, image.height));
-      } else {
-        // Apply filters
-        applyFilters(ctx, originalImageData);
-      }
+    // Apply rotation to temp canvas
+    tempCtx.save();
+    tempCtx.translate(canvasWidth / 2, canvasHeight / 2);
+    const angleInRadians = (rotation * Math.PI) / 180;
+    tempCtx.rotate(angleInRadians);
+    tempCtx.drawImage(image, -image.width / 2, -image.height / 2);
+    tempCtx.restore();
+
+    // Store the rotated image data
+    rotatedImageRef.current = tempCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+    
+    // Set as original image data if not set yet
+    if (!originalImageData) {
+      setOriginalImageData(rotatedImageRef.current);
     }
-  }, [image, brightness, contrast, saturation, originalImageData, applyFilters]);
+    
+    // Update canvas size
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    
+  }, [image, rotation, originalImageData, setOriginalImageData]);
+
+  // Effect 2: Apply filters to the rotated image
+  useEffect(() => {
+    if (!canvasRef.current || !rotatedImageRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Ensure canvas matches rotated image size
+    if (canvas.width !== rotatedImageRef.current.width || canvas.height !== rotatedImageRef.current.height) {
+      canvas.width = rotatedImageRef.current.width;
+      canvas.height = rotatedImageRef.current.height;
+    }
+
+    // Apply filters to the rotated image
+    applyFilters(ctx, rotatedImageRef.current);
+    
+  }, [rotation, brightness, contrast, saturation, applyFilters]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
