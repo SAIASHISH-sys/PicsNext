@@ -35,21 +35,10 @@ function App() {
       <header className="bg-[#18171f] border-b border-gray-800 shadow-lg">
         <div className="px-4 py-2 flex items-center justify-between">
           {/* Left: Logo and Project Name */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 pl-10">
             <div className="flex items-center space-x-2">
-              <span className="text-2xl">📷</span>
-              <h1 className="text-lg font-bold text-white">PicsNext</h1>
-            </div>
-            <div className="hidden md:flex items-center space-x-2">
-              <button className="px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded transition">
-                File
-              </button>
-              <button className="px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded transition">
-                Edit
-              </button>
-              <button className="px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded transition">
-                View
-              </button>
+              <span className="text-2xl ">📷</span>
+              <h1 className="text-2xl  font-bold text-white">PicsNext</h1>
             </div>
           </div>
 

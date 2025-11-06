@@ -1,10 +1,18 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
+export interface CropArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface ImageState {
   brightness: number;
   contrast: number;
   saturation: number;
   cropRatio: string;
+  cropArea: CropArea | null;
   filter: string;
   rotation: number;
 }
@@ -21,6 +29,7 @@ const initialState: ImageEditorState = {
     contrast: 0,
     saturation: 100,
     cropRatio: 'free',
+    cropArea: null,
     filter: 'none',
     rotation: 0,
   },
@@ -73,6 +82,24 @@ const imageEditorSlice = createSlice({
       if (state.present.cropRatio !== action.payload) {
         state.past.push(state.present);
         state.present = { ...state.present, cropRatio: action.payload };
+        state.future = [];
+      }
+    },
+    
+    setCropArea: (state, action: PayloadAction<CropArea | null>) => {
+      const hasChanged = JSON.stringify(state.present.cropArea) !== JSON.stringify(action.payload);
+      if (hasChanged) {
+        state.past.push(state.present);
+        state.present = { ...state.present, cropArea: action.payload };
+        state.future = [];
+      }
+    },
+    
+    applyCrop: (state) => {
+      // When crop is applied, reset the crop area but keep it in history
+      if (state.present.cropArea) {
+        state.past.push(state.present);
+        state.present = { ...state.present, cropArea: null };
         state.future = [];
       }
     },
@@ -130,6 +157,8 @@ export const {
   setContrast,
   setSaturation,
   setCropRatio,
+  setCropArea,
+  applyCrop,
   setFilter,
   setRotation,
   undo,

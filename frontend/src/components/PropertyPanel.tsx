@@ -1,5 +1,5 @@
-import { useAppDispatch } from '../store/hooks';
-import { setBrightness, setContrast, setSaturation, setFilter, setRotation } from '../store/imageEditorSlice';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { setBrightness, setContrast, setSaturation, setFilter, setRotation, setCropRatio } from '../store/imageEditorSlice';
 
 interface PropertyPanelProps {
   selectedTool: string;
@@ -15,6 +15,7 @@ const PropertyPanel = ({
   saturation,
 }: PropertyPanelProps) => {
   const dispatch = useAppDispatch();
+  const currentCropRatio = useAppSelector((state) => state.imageEditor.present.cropRatio);
 
   const handleBrightnessChange = (value: number) => {
     dispatch(setBrightness(value));
@@ -34,6 +35,10 @@ const PropertyPanel = ({
 
   const handleRotation = (degrees: number) => {
     dispatch(setRotation(degrees));
+  };
+
+  const handleCropRatioChange = (ratio: string) => {
+    dispatch(setCropRatio(ratio));
   };
 
   const renderToolProperties = () => {
@@ -174,14 +179,30 @@ const PropertyPanel = ({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-300">Crop Aspect Ratio</h3>
             <div className="space-y-2">
-              {['Free', '1:1', '4:3', '16:9', '3:2'].map((ratio) => (
+              {[
+                { value: 'free', label: 'Free' },
+                { value: '1:1', label: '1:1 (Square)' },
+                { value: '4:3', label: '4:3' },
+                { value: '16:9', label: '16:9 (Widescreen)' },
+                { value: '3:2', label: '3:2' },
+              ].map((ratio) => (
                 <button
-                  key={ratio}
-                  className="w-full px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium text-left"
+                  key={ratio.value}
+                  onClick={() => handleCropRatioChange(ratio.value)}
+                  className={`w-full px-3 py-2.5 rounded-lg transition-colors text-sm font-medium text-left ${
+                    currentCropRatio === ratio.value
+                      ? 'bg-[#8b3dff] text-white'
+                      : 'bg-gray-800 text-gray-300 hover:bg-[#8b3dff] hover:text-white'
+                  }`}
                 >
-                  {ratio}
+                  {ratio.label}
                 </button>
               ))}
+            </div>
+            <div className="pt-4 border-t border-gray-700">
+              <p className="text-xs text-gray-400 mb-3">
+                Select a ratio above, then drag on the image to create a crop area. Use the handles to resize.
+              </p>
             </div>
           </div>
         );

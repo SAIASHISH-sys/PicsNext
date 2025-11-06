@@ -1,6 +1,7 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { useImageLoader } from '../hooks/useImageLoader';
 import { useImageFilters } from '../hooks/useImageFilters';
+import { useImageCrop } from '../hooks/useImageCrop';
 import { useAppSelector } from '../store/hooks';
 
 interface ImageCanvasProps {
@@ -12,6 +13,7 @@ interface ImageCanvasProps {
 }
 
 const ImageCanvas = ({ 
+  selectedTool,
   brightness, 
   contrast, 
   saturation,
@@ -47,6 +49,41 @@ const ImageCanvas = ({
     contrast,
     saturation,
   });
+
+  // Use the crop hook when crop tool is selected
+  const {
+    cropArea,
+    handleMouseDown: handleCropMouseDown,
+    handleMouseMove: handleCropMouseMove,
+    handleMouseUp: handleCropMouseUp,
+    handleApplyCrop,
+    handleCancelCrop,
+  } = useImageCrop({
+    canvasRef,
+    containerRef,
+    isActive: selectedTool === 'crop',
+    zoom,
+    panOffset,
+  });
+
+  // Wrapper to apply crop and update the main canvas
+  const handleApplyCropWrapper = useCallback(() => {
+    const croppedCanvas = handleApplyCrop();
+    if (!croppedCanvas || !canvasRef.current) return;
+
+    // Convert the cropped canvas to a blob and reload it as the main image
+    croppedCanvas.toBlob((blob) => {
+      if (!blob) return;
+      
+      const img = new Image();
+      img.onload = () => {
+        loadImage(new File([blob], 'cropped.png', { type: 'image/png' }));
+        resetFilterRef();
+        onHistoryChange('Crop applied');
+      };
+      img.src = URL.createObjectURL(blob);
+    });
+  }, [handleApplyCrop, canvasRef, loadImage, resetFilterRef, onHistoryChange]);
 
   // Get rotation from Redux
   const rotation = useAppSelector((state) => state.imageEditor.present.rotation);
@@ -205,6 +242,12 @@ const ImageCanvas = ({
 
   // Drag-to-pan handlers (works at any zoom level)
   const handleDragStart: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    // If crop tool is active, use crop handlers instead
+    if (selectedTool === 'crop') {
+      handleCropMouseDown(e);
+      return;
+    }
+    
     if (e.button !== 0) return; // left button only
     if (!image) return;
     
@@ -218,6 +261,12 @@ const ImageCanvas = ({
   };
 
   const handleDragMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    // If crop tool is active, use crop handlers instead
+    if (selectedTool === 'crop') {
+      handleCropMouseMove(e);
+      return;
+    }
+    
     if (!isDraggingRef.current || !dragStartRef.current) return;
     
     const dx = e.clientX - dragStartRef.current.x;
@@ -230,6 +279,12 @@ const ImageCanvas = ({
   };
 
   const handleDragEnd = () => {
+    // If crop tool is active, use crop handlers instead
+    if (selectedTool === 'crop') {
+      handleCropMouseUp();
+      return;
+    }
+    
     isDraggingRef.current = false;
     dragStartRef.current = null;
   };
@@ -359,6 +414,38 @@ const ImageCanvas = ({
                 Reset
               </button>
             </div>
+
+            {/* Crop Action Buttons */}
+            {selectedTool === 'crop' && (
+              <>
+                <div className="h-6 w-px bg-gray-700" />
+                <div className="text-sm text-gray-400">
+                  {cropArea ? `Crop: ${Math.round(cropArea.width)} x ${Math.round(cropArea.height)}` : 'Drag to create crop area'}
+                </div>
+                {cropArea && (
+                  <>
+                    <button
+                      onClick={handleApplyCropWrapper}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors text-sm font-medium flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Apply Crop
+                    </button>
+                    <button
+                      onClick={handleCancelCrop}
+                      className="px-4 py-2 bg-gray-700 text-gray-200 rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </>
+            )}
           </div>
           
           {/* Canvas Container */}
@@ -369,14 +456,14 @@ const ImageCanvas = ({
             onMouseMove={handleDragMove}
             onMouseUp={handleDragEnd}
             onMouseLeave={handleDragEnd}
-            className={`flex-1 w-full overflow-hidden rounded-lg ${image ? (isDraggingRef.current ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+            className={`flex-1 w-full overflow-hidden rounded-lg ${image ? (selectedTool === 'crop' ? 'cursor-crosshair' : (isDraggingRef.current ? 'cursor-grabbing' : 'cursor-grab')) : ''}`}
             style={{
               backgroundImage: 'radial-gradient(circle, #374151 1px, transparent 1px)',
               backgroundSize: '20px 20px',
             }}
           >
-            <div className="min-h-full flex items-center justify-center p-8">
-              <div className="shadow-2xl rounded-lg overflow-visible" style={{
+            <div className="min-h-full flex items-center justify-center p-8 relative">
+              <div className="shadow-2xl rounded-lg overflow-visible relative" style={{
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
               }}>
                 <canvas
@@ -387,6 +474,86 @@ const ImageCanvas = ({
                     transformOrigin: '0 0' 
                   }}
                 />
+                
+                {/* Crop Overlay */}
+                {selectedTool === 'crop' && cropArea && canvasRef.current && (
+                  <div
+                    className="absolute"
+                    style={{
+                      left: 0,
+                      top: 0,
+                      width: `${canvasRef.current.width}px`,
+                      height: `${canvasRef.current.height}px`,
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {/* Semi-transparent overlay over non-cropped area */}
+                    <svg 
+                      width={canvasRef.current.width} 
+                      height={canvasRef.current.height}
+                      className="absolute inset-0"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <defs>
+                        <mask id="cropMask">
+                          <rect width="100%" height="100%" fill="white" />
+                          <rect 
+                            x={cropArea.x} 
+                            y={cropArea.y} 
+                            width={cropArea.width} 
+                            height={cropArea.height} 
+                            fill="black" 
+                          />
+                        </mask>
+                      </defs>
+                      <rect 
+                        width="100%" 
+                        height="100%" 
+                        fill="rgba(0, 0, 0, 0.5)" 
+                        mask="url(#cropMask)" 
+                      />
+                    </svg>
+                    
+                    {/* Crop area border */}
+                    <div
+                      className="absolute border-2 border-white"
+                      style={{
+                        left: `${cropArea.x}px`,
+                        top: `${cropArea.y}px`,
+                        width: `${cropArea.width}px`,
+                        height: `${cropArea.height}px`,
+                        pointerEvents: 'none',
+                      }}
+                    >
+                      {/* Resize handles */}
+                      {['nw', 'ne', 'sw', 'se'].map((handle) => {
+                        const isNorth = handle.includes('n');
+                        const isWest = handle.includes('w');
+                        return (
+                          <div
+                            key={handle}
+                            className="absolute w-3 h-3 bg-white border-2 border-[#8b3dff] rounded-full"
+                            style={{
+                              top: isNorth ? '-6px' : 'auto',
+                              bottom: !isNorth ? '-6px' : 'auto',
+                              left: isWest ? '-6px' : 'auto',
+                              right: !isWest ? '-6px' : 'auto',
+                              pointerEvents: 'none',
+                            }}
+                          />
+                        );
+                      })}
+                      
+                      {/* Rule of thirds grid */}
+                      <svg width="100%" height="100%" className="absolute inset-0" style={{ pointerEvents: 'none' }}>
+                        <line x1="33.33%" y1="0" x2="33.33%" y2="100%" stroke="white" strokeWidth="1" opacity="0.5" />
+                        <line x1="66.66%" y1="0" x2="66.66%" y2="100%" stroke="white" strokeWidth="1" opacity="0.5" />
+                        <line x1="0" y1="33.33%" x2="100%" y2="33.33%" stroke="white" strokeWidth="1" opacity="0.5" />
+                        <line x1="0" y1="66.66%" x2="100%" y2="66.66%" stroke="white" strokeWidth="1" opacity="0.5" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
