@@ -4,6 +4,7 @@ import ImageCanvas from './components/ImageCanvas';
 import ToolPanel from './components/ToolPanel';
 import PropertyPanel from './components/PropertyPanel';
 import HistoryPanel from './components/HistoryPanel';
+import { PerformanceMonitor } from './components/PerformanceMonitor';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { undo, redo } from './store/imageEditorSlice';
 
@@ -16,7 +17,7 @@ function App() {
   const [selectedTool, setSelectedTool] = useState('select');
   const [history, setHistory] = useState<string[]>([]);
   const [showPropertyPanel, setShowPropertyPanel] = useState(true);
-
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
   const handleHistoryChange = (action: string) => {
     setHistory(prev => [...prev, action]);
   };
@@ -74,15 +75,25 @@ function App() {
             </button>
           </div>
 
-          {/* Right: Actions
+          {/* Right: Performance Monitor Toggle */}
           <div className="flex items-center space-x-3">
-            <button className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded transition">
-              Preview
+            <button 
+              onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
+                showPerformanceMonitor
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+              title="Toggle Performance Monitor"
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span className="hidden sm:inline">Performance</span>
+              </span>
             </button>
-            <button className="px-6 py-2 text-sm font-medium bg-[#8b3dff] hover:bg-[#7c2ef5] text-white rounded-lg transition shadow-md">
-              Export
-            </button>
-          </div> */}
+          </div>
         </div>
       </header>
 
@@ -176,6 +187,9 @@ function App() {
           />
         </div>
       )}
+
+      {/* Performance Monitor - Top Right Corner */}
+      <PerformanceMonitor show={showPerformanceMonitor} position="top-right" />
     </div>
   );
 }
