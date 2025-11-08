@@ -11,6 +11,7 @@ export interface ImageState {
   brightness: number;
   contrast: number;
   saturation: number;
+  blur: number;
   cropRatio: string;
   cropArea: CropArea | null;
   filter: string;
@@ -28,6 +29,7 @@ const initialState: ImageEditorState = {
     brightness: 0,
     contrast: 0,
     saturation: 100,
+    blur: 0,
     cropRatio: 'free',
     cropArea: null,
     filter: 'none',
@@ -77,6 +79,13 @@ const imageEditorSlice = createSlice({
         state.future = [];
       }
     },
+    setBlur: (state, action: PayloadAction<number>) => {
+      if (state.present.blur !== action.payload) {
+        state.past.push(state.present);
+        state.present = { ...state.present, blur: action.payload };
+        state.future = [];
+      }
+    },
     
     setCropRatio: (state, action: PayloadAction<string>) => {
       if (state.present.cropRatio !== action.payload) {
@@ -96,7 +105,6 @@ const imageEditorSlice = createSlice({
     },
     
     applyCrop: (state) => {
-      // When crop is applied, reset the crop area but keep it in history
       if (state.present.cropArea) {
         state.past.push(state.present);
         state.present = { ...state.present, cropArea: null };
@@ -156,6 +164,7 @@ export const {
   setBrightness,
   setContrast,
   setSaturation,
+  setBlur,
   setCropRatio,
   setCropArea,
   applyCrop,

@@ -62,6 +62,19 @@ const tools: Tool[] = [
     description: 'Adjust saturation' 
   },
   { 
+    id: 'blur', 
+    name: 'Blur', 
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+        {/* Three soft circles to represent blur */}
+        <circle cx="7.5" cy="12" r="2.6" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="8" r="1.8" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="16.5" cy="13" r="3.1" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    description: 'Adjust Blur' 
+  },
+  { 
     id: 'filters', 
     name: 'Filters', 
     icon: (

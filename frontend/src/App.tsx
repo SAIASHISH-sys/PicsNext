@@ -73,16 +73,6 @@ function App() {
               </svg>
             </button>
           </div>
-
-          {/* Right: Actions
-          <div className="flex items-center space-x-3">
-            <button className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded transition">
-              Preview
-            </button>
-            <button className="px-6 py-2 text-sm font-medium bg-[#8b3dff] hover:bg-[#7c2ef5] text-white rounded-lg transition shadow-md">
-              Export
-            </button>
-          </div> */}
         </div>
       </header>
 
@@ -100,6 +90,7 @@ function App() {
             brightness={imageState.brightness}
             contrast={imageState.contrast}
             saturation={imageState.saturation}
+            blur={imageState.blur}
             onHistoryChange={handleHistoryChange}
           />
         </main>
@@ -113,6 +104,7 @@ function App() {
                 brightness={imageState.brightness}
                 contrast={imageState.contrast}
                 saturation={imageState.saturation}
+                blur={imageState.blur}
               />
             </div>
             
@@ -173,6 +165,7 @@ function App() {
             brightness={imageState.brightness}
             contrast={imageState.contrast}
             saturation={imageState.saturation}
+            blur={imageState.blur}
           />
         </div>
       )}

@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useImageLoader } from '../hooks/useImageLoader';
 import { useImageFilters } from '../hooks/useImageFilters';
+import { useImageBlur } from '../hooks/useImageBlur';
 import { useImageCrop } from '../hooks/useImageCrop';
 import { useAppSelector } from '../store/hooks';
 
@@ -9,6 +10,7 @@ interface ImageCanvasProps {
   brightness: number;
   contrast: number;
   saturation: number;
+  blur: number;
   onHistoryChange: (action: string) => void;
 }
 
@@ -17,6 +19,7 @@ const ImageCanvas = ({
   brightness, 
   contrast, 
   saturation,
+  blur,
   onHistoryChange 
 }: ImageCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -49,6 +52,9 @@ const ImageCanvas = ({
     contrast,
     saturation,
   });
+
+  // Use the blur hook
+  const { applyBlur } = useImageBlur({ blur });
 
   // Use the crop hook when crop tool is selected
   const {
@@ -133,7 +139,7 @@ const ImageCanvas = ({
     
   }, [image, rotation, originalImageData, setOriginalImageData]);
 
-  // Effect 2: Apply filters to the rotated image
+  // Effect 2: Apply filters and blur to the rotated image
   useEffect(() => {
     if (!canvasRef.current || !rotatedImageRef.current) return;
     
@@ -147,10 +153,15 @@ const ImageCanvas = ({
       canvas.height = rotatedImageRef.current.height;
     }
 
-    // Apply filters to the rotated image
+    // Apply filters to the rotated image first
     applyFilters(ctx, rotatedImageRef.current);
     
-  }, [rotation, brightness, contrast, saturation, applyFilters]);
+    // Then apply blur if needed
+    if (blur > 0) {
+      const currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      applyBlur(ctx, currentImageData);
+    }
+  }, [rotation, brightness, contrast, saturation, blur, applyFilters, applyBlur]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

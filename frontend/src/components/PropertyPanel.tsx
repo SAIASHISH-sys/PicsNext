@@ -1,17 +1,19 @@
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { setBrightness, setContrast, setSaturation, setFilter, setRotation, setCropRatio } from '../store/imageEditorSlice';
+import { setBrightness, setContrast, setSaturation, setBlur, setFilter, setRotation, setCropRatio } from '../store/imageEditorSlice';
 
 interface PropertyPanelProps {
   selectedTool: string;
   brightness: number;
   contrast: number;
   saturation: number;
+  blur: number;
 }
 
 const PropertyPanel = ({
   selectedTool,
   brightness,
   contrast,
+  blur,
   saturation,
 }: PropertyPanelProps) => {
   const dispatch = useAppDispatch();
@@ -29,6 +31,9 @@ const PropertyPanel = ({
     dispatch(setSaturation(value));
   };
 
+  const handleBlurChange = (value: number) => {
+    dispatch(setBlur(value))
+  }
   const handleFilterChange = (filterName: string) => {
     dispatch(setFilter(filterName));
   };
@@ -119,6 +124,33 @@ const PropertyPanel = ({
                 <span>0%</span>
                 <span>100%</span>
                 <span>200%</span>
+              </div>
+            </div>
+          </div>
+        );
+
+       case 'blur':
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-3">
+                Blur
+              </label>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={blur}
+                  onChange={(e) => handleBlurChange(Number(e.target.value))}
+                  className="flex-1 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#8b3dff]"
+                />
+                <span className="text-white font-mono text-sm w-12 text-right">{blur}%</span>
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 mt-2">
+                <span>0%</span>
+                <span>50%</span>
+                <span>100%</span>
               </div>
             </div>
           </div>
