@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { setBrightness, setContrast, setSaturation, setBlur, setFilter, setRotation, setCropRatio } from '../store/imageEditorSlice';
+import { setBrightness, setContrast, setSaturation, setBlur, setFilter, setRotation, setCropRatio, resetImageState } from '../store/imageEditorSlice';
 
 interface PropertyPanelProps {
   selectedTool: string;
@@ -18,6 +18,7 @@ const PropertyPanel = ({
 }: PropertyPanelProps) => {
   const dispatch = useAppDispatch();
   const currentCropRatio = useAppSelector((state) => state.imageEditor.present.cropRatio);
+  const currentFilter = useAppSelector((state) => state.imageEditor.present.filter);
 
   const handleBrightnessChange = (value: number) => {
     dispatch(setBrightness(value));
@@ -44,6 +45,10 @@ const PropertyPanel = ({
 
   const handleCropRatioChange = (ratio: string) => {
     dispatch(setCropRatio(ratio));
+  };
+
+  const handleReset = () => {
+    dispatch(resetImageState());
   };
 
   const renderToolProperties = () => {
@@ -164,12 +169,27 @@ const PropertyPanel = ({
               {['Grayscale', 'Sepia', 'Vintage', 'Cool', 'Warm', 'HDR'].map((filter) => (
                 <button
                   key={filter}
-                  className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-[#8b3dff] hover:text-white transition-colors text-sm font-medium"
+                  onClick={() => handleFilterChange(filter)}
+                  className={`px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                    currentFilter?.toLowerCase() === filter.toLowerCase()
+                      ? 'bg-[#8b3dff] text-white'
+                      : 'bg-gray-800 text-gray-300 hover:bg-[#8b3dff] hover:text-white'
+                  }`}
                 >
                   {filter}
                 </button>
               ))}
             </div>
+            <button
+              onClick={() => handleFilterChange('none')}
+              className={`w-full px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                currentFilter === 'none' || !currentFilter
+                  ? 'bg-[#8b3dff] text-white'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+            >
+              No Filter
+            </button>
           </div>
         );
 
@@ -212,14 +232,10 @@ const PropertyPanel = ({
             <h3 className="text-sm font-semibold text-gray-300">Crop Aspect Ratio</h3>
             <div className="space-y-2">
               {[
-                { value: 'free', label: 'Free' },
-                { value: '1:1', label: '1:1 (Square)' },
-                { value: '4:3', label: '4:3' },
-                { value: '16:9', label: '16:9 (Widescreen)' },
-                { value: '3:2', label: '3:2' },
+                { value: 'free', label: 'Free' }
               ].map((ratio) => (
                 <button
-                  key={ratio.value}
+                  key={ratio.value}   
                   onClick={() => handleCropRatioChange(ratio.value)}
                   className={`w-full px-3 py-2.5 rounded-lg transition-colors text-sm font-medium text-left ${
                     currentCropRatio === ratio.value
@@ -296,10 +312,28 @@ const PropertyPanel = ({
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 flex flex-col h-full">
       <h2 className="text-lg font-bold text-white mb-6">Edit</h2>
-      <div className="space-y-6">
+      <div className="flex-1 space-y-6 overflow-y-auto">
         {renderToolProperties()}
+      </div>
+      
+      {/* Reset Button at Bottom */}
+      <div className="pt-6 mt-6 border-t border-gray-700">
+        <button
+          onClick={handleReset}
+          className="w-full px-4 py-3 bg-gray-800 text-gray-200 rounded-lg hover:bg-red-600 hover:text-white transition-colors text-sm font-medium flex items-center justify-center gap-2 group"
+        >
+          <svg 
+            className="w-5 h-5 transition-transform group-hover:rotate-180" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Reset to Original
+        </button>
       </div>
     </div>
   );

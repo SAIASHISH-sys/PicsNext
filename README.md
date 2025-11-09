@@ -1,212 +1,232 @@
-# Photo Editor
+# PicsNext - Modern Photo Editor
 
-A professional-grade photo editing application built with React, TypeScript, and Tailwind CSS. This modern web-based image editor provides intuitive tools for image manipulation and enhancement.
+A powerful, web-based photo editing application built with React, TypeScript, and Vite. PicsNext offers a comprehensive suite of image editing tools with a sleek, dark-themed UI inspired by modern design tools.
 
-![Photo Editor](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![React](https://img.shields.io/badge/React-19.1.1-61dafb.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178c6.svg)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.1.16-38bdf8.svg)
+![React](https://img.shields.io/badge/React-19.1.1-61dafb?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue?logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-7.1.7-646cff?logo=vite)
+![Redux](https://img.shields.io/badge/Redux_Toolkit-2.10.1-764abc?logo=redux)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.16-38bdf8?logo=tailwindcss)
 
 ## ✨ Features
 
-### 🎨 Core Editing Tools
-- **Select Tool**: Select and manipulate image regions
-- **Crop Tool**: Crop images with various aspect ratios (Free, 1:1, 4:3, 16:9, 3:2)
-- **Brightness Adjustment**: Fine-tune image brightness (-100 to +100)
-- **Contrast Adjustment**: Enhance or reduce image contrast (-100 to +100)
-- **Saturation Control**: Adjust color saturation (0% to 200%)
-- **Filters**: Apply preset filters (Grayscale, Sepia, Vintage, Cool, Warm, HDR)
-- **Rotate**: Rotate images (90° CW, 90° CCW, 180°, Custom)
-- **Flip**: Flip images horizontally or vertically
+### 🎨 Image Adjustments
+- **Brightness Control**: -100 to +100 range
+- **Contrast Control**: -100 to +100 range
+- **Saturation Control**: 0% to 200% range
+- **Blur Effect**: 0% to 100% with canvas-based rendering
 
-### 🖼️ Image Management
-- Upload images directly from your device
-- Download edited images
-- Support for various image formats
+### 🖼️ Preset Filters
+- **Grayscale**: Classic black & white conversion
+- **Sepia**: Warm vintage tone
+- **Vintage**: Aged photo effect with reduced contrast
+- **Cool**: Blue-toned temperature adjustment
+- **Warm**: Red/yellow-toned temperature boost
+- **HDR**: Enhanced saturation with S-curve contrast
 
-### 📜 History & Undo/Redo
-- Complete action history tracking
-- Unlimited undo/redo functionality
-- Visual history panel showing all edits
+### ✂️ Crop Tool
+- Interactive crop area with drag & resize
+- Aspect ratio constraints (Free, 1:1, 4:3, 16:9, 3:2)
+- Visual crop overlay with rule of thirds grid
+- Resize handles for precise adjustments
 
-### 📱 Responsive Design
-- **Desktop**: Full layout with all panels visible
-- **Tablet**: Optimized layout with collapsible panels
-- **Mobile**: Streamlined interface with bottom tool selection
+### 🔄 Rotation
+- 90° Clockwise
+- 90° Counter-clockwise
+- 180° flip
+- Reset to original orientation
+
+### ⚡ Advanced Features
+- **Undo/Redo**: Full history tracking with Redux
+- **Zoom & Pan**: 10% to 800% zoom with smooth panning
+- **Performance Monitoring**: Real-time FPS, memory, and render time tracking
+- **Reset to Original**: One-click restoration to default state
+- **Image Download**: Export edited images as PNG
+
+## 🏗️ Tech Stack
+
+### Core
+- **React 19.1.1** - UI framework
+- **TypeScript 5.9.3** - Type-safe development
+- **Vite 7.1.7** - Lightning-fast build tool
+
+### State Management
+- **Redux Toolkit 2.10.1** - Centralized state with undo/redo
+- **React Redux 9.2.0** - React bindings for Redux
+
+### Styling
+- **TailwindCSS 4.1.16** - Utility-first CSS framework
+- **Custom Dark Theme** - Modern, professional color scheme
+
+### Image Processing
+- **Canvas API** - Core image manipulation
+- **Fabric.js 6.9.0** - Advanced canvas operations (ready for future enhancements)
+
+## 📁 Project Structure
+
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── ImageCanvas.tsx       # Main canvas with zoom/pan
+│   │   ├── ToolPanel.tsx         # Left sidebar tool selector
+│   │   ├── PropertyPanel.tsx     # Right sidebar with controls
+│   │   ├── HistoryPanel.tsx      # Undo/redo history
+│   │   └── PerformanceMonitor.tsx # Dev performance metrics
+│   ├── hooks/
+│   │   ├── useImageLoader.ts          # Image loading & management
+│   │   ├── useImageFilters.ts         # Brightness/contrast/saturation
+│   │   ├── useImageBlur.ts            # Blur effect rendering
+│   │   ├── useImagePresetFilters.ts   # Grayscale/Sepia/Vintage/etc
+│   │   ├── useImageCrop.ts            # Crop functionality
+│   │   └── usePerformanceMetrics.ts   # Performance tracking
+│   ├── store/
+│   │   ├── store.ts              # Redux store configuration
+│   │   ├── imageEditorSlice.ts   # Image state & actions
+│   │   └── hooks.ts              # Typed Redux hooks
+│   ├── App.tsx                   # Main app layout
+│   └── main.tsx                  # Entry point
+├── public/                       # Static assets
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+└── tailwind.config.js
+```
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher recommended)
-- npm or yarn package manager
+- Node.js 18+ 
+- npm or yarn
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd photo_editor
+   git clone https://github.com/SAIASHISH-sys/PicsNext.git
+   cd PicsNext/frontend
    ```
 
-2. **Navigate to frontend directory**
-   ```bash
-   cd frontend
-   ```
-
-3. **Install dependencies**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-4. **Start development server**
+3. **Start development server**
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
-   Navigate to `http://localhost:5173` (or the port shown in your terminal)
+4. **Open in browser**
+   ```
+   http://localhost:5173
+   ```
 
-## 🏗️ Project Structure
+### Build for Production
 
-```
-frontend/
-├── public/               # Static assets
-├── src/
-│   ├── components/      # React components
-│   │   ├── ImageCanvas.tsx      # Main canvas for image display
-│   │   ├── ToolPanel.tsx        # Tool selection sidebar
-│   │   ├── PropertyPanel.tsx    # Properties/settings panel
-│   │   └── HistoryPanel.tsx     # History/undo-redo panel
-│   ├── App.tsx          # Main application component
-│   ├── App.css          # Application styles
-│   ├── main.tsx         # Entry point
-│   └── index.css        # Global styles with Tailwind imports
-├── index.html           # HTML template
-├── package.json         # Project dependencies
-├── tsconfig.json        # TypeScript configuration
-├── vite.config.ts       # Vite configuration
-└── README.md           # This file
+```bash
+npm run build
 ```
 
-## 🛠️ Technology Stack
+The optimized production build will be in the `dist/` folder.
 
-- **Framework**: React 19.1.1
-- **Language**: TypeScript 5.9.3
-- **Styling**: Tailwind CSS 4.1.16
-- **Build Tool**: Vite 7.1.7
-- **Canvas API**: HTML5 Canvas for image manipulation
+### Preview Production Build
 
-## 📦 Available Scripts
+```bash
+npm run preview
+```
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
+## 🎮 Usage
 
-## 🎯 Usage Guide
+1. **Upload an Image**: Click "Upload Image" or drag & drop
+2. **Select a Tool**: Click tools in the left sidebar
+3. **Adjust Properties**: Use sliders and controls in the right panel
+4. **Apply Effects**: Changes are applied in real-time
+5. **Undo/Redo**: Use history buttons in the top toolbar
+6. **Download**: Export your edited image
 
-### Basic Workflow
+### Keyboard Shortcuts
+- `Ctrl+Z` / `Cmd+Z` - Undo
+- `Ctrl+Y` / `Cmd+Y` - Redo
+- `Ctrl+Wheel` - Zoom in/out
+- `Drag` - Pan the canvas
 
-1. **Upload an Image**
-   - Click the "Upload Image" button in the center of the canvas
-   - Select an image from your device
+## 🧩 Custom Hooks
 
-2. **Select a Tool**
-   - Choose from the tool panel on the left (desktop)
-   - Or use the bottom toolbar (mobile)
+### Image Processing Hooks
+- `useImageLoader` - Handles image file loading and validation
+- `useImageFilters` - Applies brightness, contrast, and saturation
+- `useImageBlur` - Canvas-based blur effect
+- `useImagePresetFilters` - Six preset filter effects
+- `useImageCrop` - Interactive cropping with aspect ratios
 
-3. **Adjust Properties**
-   - Use the property panel on the right to adjust settings
-   - Each tool has specific properties and controls
+### Utility Hooks
+- `usePerformanceMetrics` - Tracks FPS and render performance
 
-4. **Track Your Changes**
-   - View all actions in the history panel at the bottom
-   - Use Undo/Redo buttons to navigate through changes
+## 🔧 Redux State Structure
 
-5. **Download Your Work**
-   - Click the "Download" button to save your edited image
-   - Image is saved in PNG format
+```typescript
+interface ImageState {
+  brightness: number;      // -100 to 100
+  contrast: number;        // -100 to 100
+  saturation: number;      // 0 to 200
+  blur: number;            // 0 to 100
+  filter: string;          // 'none' | 'Grayscale' | 'Sepia' | etc.
+  rotation: number;        // 0 | 90 | 180 | 270
+  cropRatio: string;       // 'free' | '1:1' | '4:3' | '16:9' | '3:2'
+  cropArea: CropArea | null;
+}
 
-## 🎨 Component Details
+interface ImageEditorState {
+  present: ImageState;
+  past: ImageState[];     // Undo history
+  future: ImageState[];   // Redo history
+}
+```
 
-### ImageCanvas
-- Displays the uploaded image
-- Applies real-time filters and adjustments
-- Handles image upload and download
-- Uses HTML5 Canvas API for rendering
+## 🎨 Rendering Pipeline
 
-### ToolPanel
-- Provides tool selection interface
-- Displays tool icons and descriptions
-- Includes quick actions (Reset All, Auto Enhance)
+```
+Image Load → Rotation → Basic Filters → Preset Filters → Blur → Canvas Display
+```
 
-### PropertyPanel
-- Dynamic property controls based on selected tool
-- Sliders for brightness, contrast, and saturation
-- Buttons for filters, rotation, and crop ratios
+1. **Rotation**: Applied to base image
+2. **Basic Filters**: Brightness, contrast, saturation (pixel-level)
+3. **Preset Filters**: Grayscale, sepia, etc. (pixel-level)
+4. **Blur**: CSS filter-based blur effect
+5. **Crop Overlay**: Visual crop selection (non-destructive until applied)
 
-### HistoryPanel
-- Displays chronological list of actions
-- Undo/Redo functionality with keyboard shortcuts
-- Visual indication of current state
+## 🧪 Development
 
-## 🔧 Customization
+### Linting
+```bash
+npm run lint
+```
 
-### Adding New Tools
-1. Add tool definition in `ToolPanel.tsx`
-2. Implement tool logic in `ImageCanvas.tsx`
-3. Add property controls in `PropertyPanel.tsx`
+### Type Checking
+```bash
+tsc --noEmit
+```
 
-### Adding New Filters
-1. Update the filters array in `PropertyPanel.tsx`
-2. Implement filter algorithm in `ImageCanvas.tsx`
+## 📝 License
 
-## 🚧 Future Enhancements
+This project is licensed under the MIT License.
 
-- [ ] Layer support
-- [ ] Advanced filters and effects
-- [ ] Drawing and annotation tools
-- [ ] Keyboard shortcuts
-- [ ] Save/load project files
-- [ ] Batch processing
-- [ ] Cloud storage integration
-- [ ] Export in multiple formats (JPEG, WebP, etc.)
-- [ ] Advanced crop with manual selection
-- [ ] Text overlay tool
-- [ ] Blur and sharpen tools
+## 👨‍💻 Author
 
-## 📝 Development Best Practices
-
-- Make frequent, small commits
-- Write descriptive commit messages
-- Test on multiple browsers and devices
-- Keep components modular and reusable
-- Document complex functionality
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 👥 Authors
-
-Your Name - Initial work
+**SAIASHISH-sys**
+- GitHub: [@SAIASHISH-sys](https://github.com/SAIASHISH-sys)
+- Repository: [PicsNext](https://github.com/SAIASHISH-sys/PicsNext)
 
 ## 🙏 Acknowledgments
 
-- React team for the amazing framework
-- Tailwind CSS for the utility-first CSS framework
+- React Team for the amazing framework
+- Redux Team for state management
+- Tailwind CSS for the utility-first CSS
 - Vite for the blazing-fast build tool
+- Fabric.js for advanced canvas capabilities
 
 ---
 
-Made with ❤️ using React + TypeScript + Tailwind CSS
+Built with ❤️ using React, TypeScript, and modern web technologies.
+

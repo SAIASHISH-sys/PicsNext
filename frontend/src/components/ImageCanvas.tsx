@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { useImageLoader } from '../hooks/useImageLoader';
 import { useImageFilters } from '../hooks/useImageFilters';
 import { useImageBlur } from '../hooks/useImageBlur';
+import { useImagePresetFilters } from '../hooks/useImagePresetFilters';
 import { useImageCrop } from '../hooks/useImageCrop';
 import { useAppSelector } from '../store/hooks';
 
@@ -93,6 +94,10 @@ const ImageCanvas = ({
 
   // Get rotation from Redux
   const rotation = useAppSelector((state) => state.imageEditor.present.rotation);
+  const filter = useAppSelector((state) => state.imageEditor.present.filter);
+  
+  // Use the preset filters hook
+  const { applyPresetFilter } = useImagePresetFilters({ filter });
   
   // Store the base rotated image separately
   const rotatedImageRef = useRef<ImageData | null>(null);
@@ -139,7 +144,7 @@ const ImageCanvas = ({
     
   }, [image, rotation, originalImageData, setOriginalImageData]);
 
-  // Effect 2: Apply filters and blur to the rotated image
+  // Effect 2: Apply filters, preset filters, and blur to the rotated image
   useEffect(() => {
     if (!canvasRef.current || !rotatedImageRef.current) return;
     
@@ -153,15 +158,21 @@ const ImageCanvas = ({
       canvas.height = rotatedImageRef.current.height;
     }
 
-    // Apply filters to the rotated image first
+    // Step 1: Apply basic filters (brightness, contrast, saturation)
     applyFilters(ctx, rotatedImageRef.current);
     
-    // Then apply blur if needed
+    // Step 2: Apply preset filter if selected
+    if (filter && filter !== 'none') {
+      const currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      applyPresetFilter(ctx, currentImageData);
+    }
+    
+    // Step 3: Apply blur if needed
     if (blur > 0) {
       const currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       applyBlur(ctx, currentImageData);
     }
-  }, [rotation, brightness, contrast, saturation, blur, applyFilters, applyBlur]);
+  }, [rotation, brightness, contrast, saturation, blur, filter, applyFilters, applyPresetFilter, applyBlur]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
