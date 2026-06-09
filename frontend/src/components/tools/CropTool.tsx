@@ -1,78 +1,124 @@
-import { useState, useRef, type SyntheticEvent } from 'react';
-import ReactCrop, {
-  centerCrop,
-  makeAspectCrop,
-  type Crop,
-  type PixelCrop,
-} from 'react-image-crop';
-import { useImageCrop } from '../../hooks/useImageCrop';
-import 'react-image-crop/dist/ReactCrop.css';
+import { useState, useRef } from 'react';
 import './CropTool.css';
 
-// Helper function to center the crop
-function centerAspectCrop(
-  mediaWidth: number,
-  mediaHeight: number,
-  aspect: number
-): Crop {
-  return centerCrop(
-    makeAspectCrop(
-      {
-        unit: '%',
-        width: 90,
-      },
-      aspect,
-      mediaWidth,
-      mediaHeight
-    ),
-    mediaWidth,
-    mediaHeight
-  );
+interface CropArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 interface CropToolProps {
-  isActive: boolean;
+  imageUrl: string | null;
+  isOpen: boolean;
+  onCropComplete: (croppedImageUrl: string) => void;
+  onCancel: () => void;
   aspectRatio?: number;
-  onClose?: () => void;
 }
 
-export const CropTool = ({ isActive, aspectRatio, onClose }: CropToolProps) => {
-  const { currentImage, applyCurrentCrop, cancelCrop } = useImageCrop();
+export const CropTool = ({
+  imageUrl,
+  isOpen,
+  onCropComplete,
+  onCancel,
+  aspectRatio = 1,
+}: CropToolProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
-  const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [cropArea, setCropArea] = useState<CropArea>({ x: 0, y: 0, width: 100, height: 100 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [imgDimensions, setImgDimensions] = useState<{ width: number; height: number } | null>(null);
 
-  const onImageLoad = (e: SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    if (aspectRatio) {
-      setCrop(centerAspectCrop(width, height, aspectRatio));
-    } else {
-      // Freeform crop
-      setCrop({
-        unit: '%',
-        x: 5,
-        y: 5,
-        width: 90,
-        height: 90,
-      });
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const width = img.naturalWidth;
+    const height = img.naturalHeight;
+    setImgDimensions({ width, height });
+
+    // Initialize crop area based on aspect ratio
+    let cropWidth = Math.min(width, height);
+    let cropHeight = cropWidth / aspectRatio;
+
+    if (cropHeight > height) {
+      cropHeight = height;
+      cropWidth = cropHeight * aspectRatio;
     }
+
+    const startX = (width - cropWidth) / 2;
+    const startY = (height - cropHeight) / 2;
+    setCropArea({ x: startX, y: startY, width: cropWidth, height: cropHeight });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current || !imgRef.current) return;
+    setIsDragging(true);
+    const rect = containerRef.current.getBoundingClientRect();
+    setDragStart({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging || !dragStart || !containerRef.current || !imgDimensions) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const currentX = e.clientX - rect.left;
+    const currentY = e.clientY - rect.top;
+
+    const scale = containerRef.current.offsetWidth / imgDimensions.width;
+    const deltaX = (currentX - dragStart.x) / scale;
+    const deltaY = (currentY - dragStart.y) / scale;
+
+    const newX = Math.max(0, Math.min(cropArea.x + deltaX, imgDimensions.width - cropArea.width));
+    const newY = Math.max(0, Math.min(cropArea.y + deltaY, imgDimensions.height - cropArea.height));
+
+    setCropArea((prev) => ({
+      ...prev,
+      x: newX,
+      y: newY,
+    }));
+
+    setDragStart({
+      x: currentX,
+      y: currentY,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setDragStart(null);
   };
 
   const handleApplyCrop = () => {
-    if (imgRef.current && completedCrop) {
-      applyCurrentCrop(imgRef.current, completedCrop);
-      onClose?.();
-    }
+    if (!imgRef.current || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    canvas.width = cropArea.width;
+    canvas.height = cropArea.height;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(
+      imgRef.current,
+      cropArea.x,
+      cropArea.y,
+      cropArea.width,
+      cropArea.height,
+      0,
+      0,
+      cropArea.width,
+      cropArea.height
+    );
+
+    const croppedImageUrl = canvas.toDataURL('image/png');
+    onCropComplete(croppedImageUrl);
   };
 
-  const handleCancel = () => {
-    cancelCrop();
-    setCrop(undefined);
-    setCompletedCrop(undefined);
-    onClose?.();
-  };
-
-  if (!isActive || !currentImage) {
+  if (!isOpen || !imageUrl) {
     return null;
   }
 
@@ -82,36 +128,45 @@ export const CropTool = ({ isActive, aspectRatio, onClose }: CropToolProps) => {
         <div className="crop-tool-header">
           <h3>Crop Image</h3>
           <div className="crop-tool-actions">
-            <button onClick={handleCancel} className="btn-cancel">
+            <button onClick={onCancel} className="btn-cancel">
               Cancel
             </button>
-            <button
-              onClick={handleApplyCrop}
-              className="btn-apply"
-              disabled={!completedCrop}
-            >
+            <button onClick={handleApplyCrop} className="btn-apply">
               Apply Crop
             </button>
           </div>
         </div>
         <div className="crop-tool-content">
-          <ReactCrop
-            crop={crop}
-            onChange={(_, percentCrop) => setCrop(percentCrop)}
-            onComplete={(c) => setCompletedCrop(c)}
-            aspect={aspectRatio}
-            className="crop-area"
+          <div
+            ref={containerRef}
+            className="crop-preview-container"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
           >
             <img
               ref={imgRef}
-              src={currentImage}
+              src={imageUrl}
               alt="Crop preview"
-              onLoad={onImageLoad}
-              style={{ maxHeight: '70vh', maxWidth: '100%' }}
+              onLoad={handleImageLoad}
+              style={{ maxHeight: '70vh', maxWidth: '100%', display: 'block' }}
             />
-          </ReactCrop>
+            {imgDimensions && (
+              <div
+                className="crop-selection-box"
+                style={{
+                  left: `${(cropArea.x / imgDimensions.width) * 100}%`,
+                  top: `${(cropArea.y / imgDimensions.height) * 100}%`,
+                  width: `${(cropArea.width / imgDimensions.width) * 100}%`,
+                  height: `${(cropArea.height / imgDimensions.height) * 100}%`,
+                }}
+              />
+            )}
+          </div>
         </div>
       </div>
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
     </div>
   );
 };
