@@ -1,0 +1,45 @@
+name: Frontend CI/CD to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Check out the repository code
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # Step 2: Set up Node.js environment
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        # Point the cache dependency path to your frontend folder
+        cache: 'npm'
+        cache-dependency-path: PicsNext/frontend/package-lock.json
+
+    # Step 3: Install dependencies and Build the frontend (UPDATED)
+    - name: Install & Build
+      # This tells GitHub Actions to jump into your subfolder before running commands
+      working-directory: PicsNext/frontend
+      run: |
+        npm ci
+        npm run build
+
+    # Step 4: Deploy to EC2 using SSH/rsync (UPDATED)
+    - name: Deploy to EC2
+      uses: easingthemes/ssh-deploy@main
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        REMOTE_HOST: ${{ secrets.EC2_HOST }}
+        REMOTE_USER: ${{ secrets.EC2_USER }}
+        # Update this to match where Nginx is looking on your EC2 instance!
+        TARGET: /home/ubuntu/PicsNext/frontend/dist             
+        # Specify the exact subfolder path where the build output lives
+        SOURCE: PicsNext/frontend/dist/                      
+        ARGS: "-rlgoDIVz --delete"
