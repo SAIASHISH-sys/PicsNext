@@ -31,7 +31,7 @@ function App() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#0d0c22]">
+    <div className="h-screen flex flex-col bg-blue-500">
       {/* Canva-style Top Toolbar */}
       <header className="bg-[#18171f] border-b border-gray-800 shadow-lg">
         <div className="px-4 py-2 flex items-center justify-between">
