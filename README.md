@@ -8,7 +8,7 @@ A powerful, web-based photo editing application built with React, TypeScript, an
 ![Redux](https://img.shields.io/badge/Redux_Toolkit-2.10.1-764abc?logo=redux)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.16-38bdf8?logo=tailwindcss)
 
-## ✨ Features
+## ✨ Features....
 
 ### 🎨 Image Adjustments
 - **Brightness Control**: -100 to +100 range
